@@ -1,0 +1,27 @@
+{
+  "name": "Playwright Recorder",
+  "version": "1.0",
+  "description": "Record browser actions and generate Playwright scripts",
+  "manifest_version": 3,
+  "author": "Ashish Sharda",
+  "homepage_url": "https://github.com/ashishjsharda/playwright-recorder",
+  "license": "MIT",
+  "permissions": ["activeTab", "scripting", "storage", "downloads"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ]
+}
