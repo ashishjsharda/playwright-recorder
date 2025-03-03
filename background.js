@@ -9,7 +9,7 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
         chrome.tabs.sendMessage(tab.id, {command: 'startRecording'});
       });
     });
-    
+
     // Record initial navigation
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
       if (tabs[0]) {
@@ -19,7 +19,7 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
         });
       }
     });
-  } 
+  }
   else if (message.command === 'stop') {
     isRecording = false;
     // Notify all tabs that recording has stopped
@@ -39,7 +39,7 @@ function addAction(action) {
     const actions = result.actions || [];
     actions.push(action);
     chrome.storage.local.set({actions: actions});
-    
+
     // Notify popup that actions have been updated
     chrome.runtime.sendMessage({
       type: 'actionsUpdated',
