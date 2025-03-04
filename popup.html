@@ -4,38 +4,40 @@
   <title>Playwright Recorder</title>
   <style>
     body {
-      width: 300px;
+      width: 250px;
       font-family: Arial, sans-serif;
-      padding: 10px;
+      padding: 15px;
+    }
+    h2 {
+      margin-top: 0;
+      color: #333;
     }
     button {
-      margin: 5px;
-      padding: 8px 12px;
+      width: 100%;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
       cursor: pointer;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #45a049;
     }
     #status {
       margin-top: 10px;
       color: #666;
-    }
-    #recorded-actions {
-      margin-top: 15px;
-      max-height: 200px;
-      overflow-y: auto;
-      border: 1px solid #ccc;
-      padding: 5px;
+      font-size: 12px;
     }
   </style>
 </head>
 <body>
-  <h2>Playwright Recorder</h2>
-  <div>
-    <button id="start-recording">Start Recording</button>
-    <button id="stop-recording" disabled>Stop Recording</button>
-    <button id="clear-recording" disabled>Clear Recording</button>
-    <button id="export-script" disabled>Export Script</button>
-  </div>
-  <div id="status">Not recording</div>
-  <div id="recorded-actions"></div>
-  <script src="popup.js"></script>
+<h2>Playwright Recorder</h2>
+<p>Open the recorder window to start recording browser actions and generate Playwright scripts.</p>
+<button id="open-recorder">Open Recorder</button>
+<div id="status"></div>
+<script src="popup.js"></script>
 </body>
 </html>

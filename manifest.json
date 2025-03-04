@@ -1,18 +1,31 @@
 {
   "name": "Playwright Recorder",
-  "version": "1.0",
-  "description": "Record browser actions and generate Playwright scripts",
+  "version": "1.0.0",
+  "version_name": "1.0.0 Beta",
+  "short_name": "PlayRecorder",
+  "description": "Record browser actions and generate Playwright test scripts. Simplify test automation for QA engineers and developers.",
   "manifest_version": 3,
   "author": "Ashish Sharda",
   "homepage_url": "https://github.com/ashishjsharda/playwright-recorder",
-  "permissions": ["activeTab", "scripting", "storage", "downloads"],
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "scripting",
+    "storage",
+    "downloads"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
-    }
+    },
+    "default_title": "Record Playwright Tests"
   },
   "background": {
     "service_worker": "background.js"
@@ -20,7 +33,31 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"]
+      "js": ["content.js"],
+      "all_frames": true,
+      "run_at": "document_start"
     }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["recorder.html"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "offline_enabled": true,
+  "minimum_chrome_version": "88",
+  "keywords": [
+    "playwright",
+    "test automation",
+    "record",
+    "testing",
+    "e2e",
+    "test recorder",
+    "qa tools"
   ]
 }
