@@ -1,5 +1,6 @@
 let isRecording = false;
 
+//chrome.runtime: This API allows the extension to communicate between different parts of itself (background script, popup, content scripts)
 chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
   if (message.command === 'start') {
     isRecording = true;
@@ -11,6 +12,7 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
     });
 
     // Record initial navigation
+    //chrome.tabs: This API allows the extension to interact with browser tabs
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
       if (tabs[0]) {
         addAction({
@@ -35,6 +37,7 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
 });
 
 function addAction(action) {
+  //chrome.storage.local: This provides local storage capabilities for the extension to save data
   chrome.storage.local.get(['actions'], function(result) {
     const actions = result.actions || [];
     actions.push(action);
