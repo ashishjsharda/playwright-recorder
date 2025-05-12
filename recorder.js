@@ -5,10 +5,52 @@ document.addEventListener('DOMContentLoaded', function() {
     const exportButton = document.getElementById('export-script');
     const statusDiv = document.getElementById('status');
     const actionsDiv = document.getElementById('recorded-actions');
+    const actionsCountSpan = document.getElementById('actions-count');
     const recordingIndicator = document.getElementById('recording-indicator');
     const scriptTextarea = document.getElementById('script-textarea');
     const languageSelect = document.getElementById('language-select');
     const languageIndicator = document.getElementById('language-indicator');
+    
+    // Script preview resizing functionality
+    const scriptResizer = document.getElementById('script-resizer');
+    const scriptPreview = document.querySelector('.script-preview');
+    
+    // Actions container resizing functionality
+    const actionsResizer = document.getElementById('actions-resizer');
+    const actionsContainer = document.getElementById('actions-container');
+    
+    let startY, startHeight, currentResizer;
+    
+    // Setup both resizers with the same event handling
+    function setupResizer(resizer, container) {
+        resizer.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            startY = e.clientY;
+            startHeight = parseInt(document.defaultView.getComputedStyle(container).height, 10);
+            currentResizer = {resizer, container};
+            document.documentElement.addEventListener('mousemove', doDrag, false);
+            document.documentElement.addEventListener('mouseup', stopDrag, false);
+        });
+    }
+    
+    setupResizer(scriptResizer, scriptPreview);
+    setupResizer(actionsResizer, actionsContainer);
+    
+    function doDrag(e) {
+        if (!currentResizer) return;
+        
+        const newHeight = startHeight + e.clientY - startY;
+        // Prevent it from getting too small
+        if (newHeight > 100) {
+            currentResizer.container.style.height = newHeight + 'px';
+        }
+    }
+    
+    function stopDrag() {
+        currentResizer = null;
+        document.documentElement.removeEventListener('mousemove', doDrag, false);
+        document.documentElement.removeEventListener('mouseup', stopDrag, false);
+    }
 
     let actions = [];
     let currentLanguage = languageSelect.value;
@@ -49,8 +91,8 @@ document.addEventListener('DOMContentLoaded', function() {
     exportControls.appendChild(extensionSpan);
     
     // Insert the export controls before the script preview
-    const scriptPreview = document.querySelector('.script-preview');
-    document.body.insertBefore(exportControls, scriptPreview);
+    const scriptPreviewElement = document.querySelector('.script-preview');
+    document.body.insertBefore(exportControls, scriptPreviewElement);
 
     // Immediately disable Stop button
     stopButton.disabled = true;
@@ -133,6 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('Actions cleared in storage');
                 actions = [];
                 actionsDiv.innerHTML = '';
+                actionsCountSpan.textContent = '0 actions';
                 clearButton.disabled = true;
                 exportButton.disabled = false;
                 updateScriptPreview(actions);
@@ -224,6 +267,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateActionsList(actions) {
         console.log(`Updating actions list with ${actions.length} actions`);
         actionsDiv.innerHTML = '';
+        actionsCountSpan.textContent = actions.length + (actions.length === 1 ? ' action' : ' actions');
 
         if (actions.length === 0) {
             const emptyMessage = document.createElement('div');
