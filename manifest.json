@@ -1,9 +1,9 @@
 {
   "name": "Playwright Recorder",
-  "version": "1.0.0",
-  "version_name": "1.0.0 Beta",
+  "version": "1.1.0",
+  "version_name": "1.1.0 Beta",
   "short_name": "PlayRecorder",
-  "description": "Record browser actions and generate Playwright test scripts. Simplify test automation for QA engineers and developers.",
+  "description": "Record browser actions and generate Playwright test scripts in JavaScript, TypeScript, Python, and Java. Simplify test automation for QA engineers and developers.",
   "manifest_version": 3,
   "author": "Ashish Sharda",
   "homepage_url": "https://github.com/ashishjsharda/playwright-recorder",
@@ -50,14 +50,5 @@
     "128": "icons/icon128.png"
   },
   "offline_enabled": true,
-  "minimum_chrome_version": "88",
-  "keywords": [
-    "playwright",
-    "test automation",
-    "record",
-    "testing",
-    "e2e",
-    "test recorder",
-    "qa tools"
-  ]
+  "minimum_chrome_version": "88"
 }
