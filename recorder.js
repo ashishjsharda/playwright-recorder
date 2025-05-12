@@ -15,13 +15,70 @@ document.addEventListener('DOMContentLoaded', function() {
 
     console.log('Recorder interface loaded');
 
+    // Add a filename input field
+    const exportControls = document.createElement('div');
+    exportControls.className = 'export-controls';
+    exportControls.style.marginTop = '10px';
+    exportControls.style.display = 'flex';
+    exportControls.style.alignItems = 'center';
+    exportControls.style.gap = '10px';
+    
+    const filenameLabel = document.createElement('label');
+    filenameLabel.textContent = 'Filename:';
+    filenameLabel.style.fontWeight = 'bold';
+    
+    const filenameInput = document.createElement('input');
+    filenameInput.type = 'text';
+    filenameInput.id = 'filename-input';
+    filenameInput.value = 'playwright-test';
+    filenameInput.style.padding = '6px 10px';
+    filenameInput.style.borderRadius = '4px';
+    filenameInput.style.border = '1px solid #ccc';
+    filenameInput.style.flexGrow = '1';
+    
+    const extensionSpan = document.createElement('span');
+    extensionSpan.id = 'extension-display';
+    extensionSpan.textContent = '.js';
+    extensionSpan.style.backgroundColor = '#eee';
+    extensionSpan.style.padding = '6px 10px';
+    extensionSpan.style.borderRadius = '4px';
+    extensionSpan.style.fontFamily = 'monospace';
+    
+    exportControls.appendChild(filenameLabel);
+    exportControls.appendChild(filenameInput);
+    exportControls.appendChild(extensionSpan);
+    
+    // Insert the export controls before the script preview
+    const scriptPreview = document.querySelector('.script-preview');
+    document.body.insertBefore(exportControls, scriptPreview);
+
     // Immediately disable Stop button
     stopButton.disabled = true;
+
+    // Update file extension when language changes
+    function updateExtension() {
+        const extensionDisplay = document.getElementById('extension-display');
+        switch(currentLanguage) {
+            case 'javascript':
+                extensionDisplay.textContent = '.js';
+                break;
+            case 'typescript':
+                extensionDisplay.textContent = '.ts';
+                break;
+            case 'python':
+                extensionDisplay.textContent = '.py';
+                break;
+            case 'java':
+                extensionDisplay.textContent = '.java';
+                break;
+        }
+    }
 
     // Language select change handler
     languageSelect.addEventListener('change', function() {
         currentLanguage = languageSelect.value;
         languageIndicator.textContent = languageSelect.options[languageSelect.selectedIndex].text;
+        updateExtension();
         updateScriptPreview(actions);
     });
 
@@ -87,29 +144,40 @@ document.addEventListener('DOMContentLoaded', function() {
         if (actions.length > 0) {
             console.log('Exporting script in', currentLanguage);
             let script;
-            let filename;
+            let extension;
+            let customFilename = document.getElementById('filename-input').value.trim();
+            
+            // Fallback to default if empty
+            if (!customFilename) {
+                customFilename = 'playwright-test';
+            }
+            
+            // Remove any file extension the user might have added
+            customFilename = customFilename.replace(/\.\w+$/, '');
             
             switch (currentLanguage) {
                 case 'javascript':
                     script = generateJavaScriptScript(actions);
-                    filename = 'playwright-script.js';
+                    extension = '.js';
                     break;
                 case 'typescript':
                     script = generateTypeScriptScript(actions);
-                    filename = 'playwright-script.ts';
+                    extension = '.ts';
                     break;
                 case 'python':
                     script = generatePythonScript(actions);
-                    filename = 'playwright-script.py';
+                    extension = '.py';
                     break;
                 case 'java':
                     script = generateJavaScript(actions);
-                    filename = 'PlaywrightTest.java';
+                    extension = '.java';
                     break;
                 default:
                     script = generateJavaScriptScript(actions);
-                    filename = 'playwright-script.js';
+                    extension = '.js';
             }
+
+            const filename = customFilename + extension;
 
             // Create a blob and download the script
             const blob = new Blob([script], {type: 'text/plain'});
@@ -237,6 +305,9 @@ document.addEventListener('DOMContentLoaded', function() {
             scriptTextarea.value = `// No actions recorded yet\n// Click "Start Recording" and interact with your web page`;
         }
     }
+
+    // Initialize the extension display
+    updateExtension();
 
     // JavaScript Generator
     function generateJavaScriptScript(actions) {
