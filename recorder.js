@@ -7,13 +7,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const actionsDiv = document.getElementById('recorded-actions');
     const recordingIndicator = document.getElementById('recording-indicator');
     const scriptTextarea = document.getElementById('script-textarea');
+    const languageSelect = document.getElementById('language-select');
+    const languageIndicator = document.getElementById('language-indicator');
 
     let actions = [];
+    let currentLanguage = languageSelect.value;
 
     console.log('Recorder interface loaded');
 
     // Immediately disable Stop button
     stopButton.disabled = true;
+
+    // Language select change handler
+    languageSelect.addEventListener('change', function() {
+        currentLanguage = languageSelect.value;
+        languageIndicator.textContent = languageSelect.options[languageSelect.selectedIndex].text;
+        updateScriptPreview(actions);
+    });
 
     // Check if recording is already active
     console.log('Checking recording status...');
@@ -67,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 actions = [];
                 actionsDiv.innerHTML = '';
                 clearButton.disabled = true;
-                exportButton.disabled = true;
+                exportButton.disabled = false;
                 updateScriptPreview(actions);
             });
         }
@@ -75,16 +85,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
     exportButton.addEventListener('click', function() {
         if (actions.length > 0) {
-            console.log('Exporting script');
-            const playwrightScript = generatePlaywrightScript(actions);
+            console.log('Exporting script in', currentLanguage);
+            let script;
+            let filename;
+            
+            switch (currentLanguage) {
+                case 'javascript':
+                    script = generateJavaScriptScript(actions);
+                    filename = 'playwright-script.js';
+                    break;
+                case 'typescript':
+                    script = generateTypeScriptScript(actions);
+                    filename = 'playwright-script.ts';
+                    break;
+                case 'python':
+                    script = generatePythonScript(actions);
+                    filename = 'playwright-script.py';
+                    break;
+                case 'java':
+                    script = generateJavaScript(actions);
+                    filename = 'PlaywrightTest.java';
+                    break;
+                default:
+                    script = generateJavaScriptScript(actions);
+                    filename = 'playwright-script.js';
+            }
 
             // Create a blob and download the script
-            const blob = new Blob([playwrightScript], {type: 'text/javascript'});
+            const blob = new Blob([script], {type: 'text/plain'});
             const url = URL.createObjectURL(blob);
 
             chrome.downloads.download({
                 url: url,
-                filename: 'playwright-script.js',
+                filename: filename,
                 saveAs: true
             });
         }
@@ -180,15 +213,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateScriptPreview(actions) {
         console.log('Updating script preview for', actions.length, 'actions');
+        
         if (actions.length > 0) {
-            scriptTextarea.value = generatePlaywrightScript(actions);
+            let script;
+            switch (currentLanguage) {
+                case 'javascript':
+                    script = generateJavaScriptScript(actions);
+                    break;
+                case 'typescript':
+                    script = generateTypeScriptScript(actions);
+                    break;
+                case 'python':
+                    script = generatePythonScript(actions);
+                    break;
+                case 'java':
+                    script = generateJavaScript(actions);
+                    break;
+                default:
+                    script = generateJavaScriptScript(actions);
+            }
+            scriptTextarea.value = script;
         } else {
-            scriptTextarea.value = '// No actions recorded yet\n// Click "Start Recording" and interact with your web page';
+            scriptTextarea.value = `// No actions recorded yet\n// Click "Start Recording" and interact with your web page`;
         }
     }
 
-    function generatePlaywrightScript(actions) {
-        console.log('Generating script for actions:', actions);
+    // JavaScript Generator
+    function generateJavaScriptScript(actions) {
+        console.log('Generating JavaScript script for actions:', actions);
 
         let script = `const { chromium } = require('playwright');\n\n`;
         script += `(async () => {\n`;
@@ -230,7 +282,158 @@ document.addEventListener('DOMContentLoaded', function() {
         script += `\n  await browser.close();\n`;
         script += `})();\n`;
 
-        console.log('Generated script:', script);
+        return script;
+    }
+
+    // TypeScript Generator
+    function generateTypeScriptScript(actions) {
+        console.log('Generating TypeScript script for actions:', actions);
+
+        let script = `import { chromium, Browser, BrowserContext, Page } from 'playwright';\n\n`;
+        script += `(async () => {\n`;
+        script += `  let browser: Browser;\n`;
+        script += `  let context: BrowserContext;\n`;
+        script += `  let page: Page;\n\n`;
+        script += `  try {\n`;
+        script += `    browser = await chromium.launch({ headless: false });\n`;
+        script += `    context = await browser.newContext();\n`;
+        script += `    page = await context.newPage();\n\n`;
+
+        // Process all actions
+        for (let i = 0; i < actions.length; i++) {
+            const action = actions[i];
+
+            switch (action.type) {
+                case 'navigate':
+                    script += `    await page.goto('${action.value}');\n`;
+                    break;
+                case 'click':
+                    script += `    await page.click('${action.selector}');\n`;
+                    break;
+                case 'type':
+                    script += `    await page.fill('${action.selector}', '${action.value}');\n`;
+                    break;
+                case 'select':
+                    script += `    await page.selectOption('${action.selector}', '${action.value}');\n`;
+                    break;
+                case 'check':
+                    script += `    await page.check('${action.selector}');\n`;
+                    break;
+                case 'uncheck':
+                    script += `    await page.uncheck('${action.selector}');\n`;
+                    break;
+                case 'wait':
+                    script += `    await page.waitForSelector('${action.selector}');\n`;
+                    break;
+            }
+        }
+
+        script += `\n    // Add assertions here\n`;
+        script += `    // await expect(page).toHaveTitle('Expected Title');\n`;
+        script += `  } finally {\n`;
+        script += `    await browser?.close();\n`;
+        script += `  }\n`;
+        script += `})();\n`;
+
+        return script;
+    }
+
+    // Python Generator
+    function generatePythonScript(actions) {
+        console.log('Generating Python script for actions:', actions);
+
+        let script = `import asyncio\nfrom playwright.async_api import async_playwright\n\n`;
+        script += `async def run():\n`;
+        script += `    async with async_playwright() as playwright:\n`;
+        script += `        browser = await playwright.chromium.launch(headless=False)\n`;
+        script += `        context = await browser.new_context()\n`;
+        script += `        page = await context.new_page()\n\n`;
+
+        // Process all actions
+        for (let i = 0; i < actions.length; i++) {
+            const action = actions[i];
+
+            switch (action.type) {
+                case 'navigate':
+                    script += `        await page.goto("${action.value}")\n`;
+                    break;
+                case 'click':
+                    script += `        await page.click("${action.selector}")\n`;
+                    break;
+                case 'type':
+                    script += `        await page.fill("${action.selector}", "${action.value}")\n`;
+                    break;
+                case 'select':
+                    script += `        await page.select_option("${action.selector}", "${action.value}")\n`;
+                    break;
+                case 'check':
+                    script += `        await page.check("${action.selector}")\n`;
+                    break;
+                case 'uncheck':
+                    script += `        await page.uncheck("${action.selector}")\n`;
+                    break;
+                case 'wait':
+                    script += `        await page.wait_for_selector("${action.selector}")\n`;
+                    break;
+            }
+        }
+
+        script += `\n        # Add assertions here\n`;
+        script += `        # expect(page).to_have_title("Expected Title")\n`;
+        script += `\n        await browser.close()\n\n`;
+        script += `asyncio.run(run())\n`;
+
+        return script;
+    }
+
+    // Java Generator
+    function generateJavaScript(actions) {
+        console.log('Generating Java script for actions:', actions);
+
+        let script = `import com.microsoft.playwright.*;\n\n`;
+        script += `public class PlaywrightTest {\n`;
+        script += `    public static void main(String[] args) {\n`;
+        script += `        try (Playwright playwright = Playwright.create()) {\n`;
+        script += `            Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions()\n`;
+        script += `                    .setHeadless(false));\n`;
+        script += `            BrowserContext context = browser.newContext();\n`;
+        script += `            Page page = context.newPage();\n\n`;
+
+        // Process all actions
+        for (let i = 0; i < actions.length; i++) {
+            const action = actions[i];
+
+            switch (action.type) {
+                case 'navigate':
+                    script += `            page.navigate("${action.value}");\n`;
+                    break;
+                case 'click':
+                    script += `            page.click("${action.selector}");\n`;
+                    break;
+                case 'type':
+                    script += `            page.fill("${action.selector}", "${action.value}");\n`;
+                    break;
+                case 'select':
+                    script += `            page.selectOption("${action.selector}", "${action.value}");\n`;
+                    break;
+                case 'check':
+                    script += `            page.check("${action.selector}");\n`;
+                    break;
+                case 'uncheck':
+                    script += `            page.uncheck("${action.selector}");\n`;
+                    break;
+                case 'wait':
+                    script += `            page.waitForSelector("${action.selector}");\n`;
+                    break;
+            }
+        }
+
+        script += `\n            // Add assertions here\n`;
+        script += `            // assertThat(page.title()).isEqualTo("Expected Title");\n`;
+        script += `        }\n`;
+        script += `    }\n`;
+        script += `}\n`;
+
         return script;
     }
 });
