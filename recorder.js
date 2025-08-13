@@ -113,6 +113,9 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'java':
                 extensionDisplay.textContent = '.java';
                 break;
+            case 'csharp':
+                extensionDisplay.textContent = '.cs';
+                break;
         }
     }
 
@@ -214,6 +217,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 case 'java':
                     script = generateJavaScript(actions);
                     extension = '.java';
+                    break;
+                case 'csharp':
+                    script = generateCSharpScript(actions);
+                    extension = '.cs';
                     break;
                 default:
                     script = generateJavaScriptScript(actions);
@@ -341,12 +348,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 case 'java':
                     script = generateJavaScript(actions);
                     break;
+                case 'csharp':
+                    script = generateCSharpScript(actions);
+                    break;
                 default:
                     script = generateJavaScriptScript(actions);
             }
             scriptTextarea.value = script;
         } else {
-            scriptTextarea.value = `// No actions recorded yet\n// Click "Start Recording" and interact with your web page`;
+            let placeholder;
+            switch (currentLanguage) {
+                case 'csharp':
+                    placeholder = `// No actions recorded yet\n// Click "Start Recording" and interact with your web page`;
+                    break;
+                case 'python':
+                    placeholder = `# No actions recorded yet\n# Click "Start Recording" and interact with your web page`;
+                    break;
+                case 'java':
+                    placeholder = `// No actions recorded yet\n// Click "Start Recording" and interact with your web page`;
+                    break;
+                default:
+                    placeholder = `// No actions recorded yet\n// Click "Start Recording" and interact with your web page`;
+            }
+            scriptTextarea.value = placeholder;
         }
     }
 
@@ -545,6 +569,61 @@ document.addEventListener('DOMContentLoaded', function() {
 
         script += `\n            // Add assertions here\n`;
         script += `            // assertThat(page.title()).isEqualTo("Expected Title");\n`;
+        script += `        }\n`;
+        script += `    }\n`;
+        script += `}\n`;
+
+        return script;
+    }
+
+    // C# Generator
+    function generateCSharpScript(actions) {
+        console.log('Generating C# script for actions:', actions);
+
+        let script = `using Microsoft.Playwright;\nusing System.Threading.Tasks;\n\n`;
+        script += `namespace PlaywrightTests\n{\n`;
+        script += `    class Program\n    {\n`;
+        script += `        static async Task Main(string[] args)\n        {\n`;
+        script += `            using var playwright = await Playwright.CreateAsync();\n`;
+        script += `            await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions\n`;
+        script += `            {\n`;
+        script += `                Headless = false\n`;
+        script += `            });\n`;
+        script += `            var context = await browser.NewContextAsync();\n`;
+        script += `            var page = await context.NewPageAsync();\n\n`;
+
+        // Process all actions
+        for (let i = 0; i < actions.length; i++) {
+            const action = actions[i];
+
+            switch (action.type) {
+                case 'navigate':
+                    script += `            await page.GotoAsync("${action.value}");\n`;
+                    break;
+                case 'click':
+                    script += `            await page.ClickAsync("${action.selector}");\n`;
+                    break;
+                case 'type':
+                    script += `            await page.FillAsync("${action.selector}", "${action.value}");\n`;
+                    break;
+                case 'select':
+                    script += `            await page.SelectOptionAsync("${action.selector}", "${action.value}");\n`;
+                    break;
+                case 'check':
+                    script += `            await page.CheckAsync("${action.selector}");\n`;
+                    break;
+                case 'uncheck':
+                    script += `            await page.UncheckAsync("${action.selector}");\n`;
+                    break;
+                case 'wait':
+                    script += `            await page.WaitForSelectorAsync("${action.selector}");\n`;
+                    break;
+            }
+        }
+
+        script += `\n            // Add assertions here\n`;
+        script += `            // await Expect(page).ToHaveTitleAsync("Expected Title");\n`;
+        script += `\n            await browser.CloseAsync();\n`;
         script += `        }\n`;
         script += `    }\n`;
         script += `}\n`;
